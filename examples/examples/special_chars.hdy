@@ -1,0 +1,2 @@
+var s = "Tab\tNewline\nBackspace\b"
+print(s)

@@ -1,0 +1,5 @@
+const PI: float = 3.141
+var radius: int = 2.0
+
+print(PI)
+print(radius)

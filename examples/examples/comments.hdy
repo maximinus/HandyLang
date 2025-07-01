@@ -1,0 +1,10 @@
+# This is a line comment
+var x = 5
+
+"""
+This is a block comment
+spanning multiple lines
+"""
+
+var y = 10  # Inline comment
+print(x + y)

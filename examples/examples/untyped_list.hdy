@@ -1,0 +1,2 @@
+var lst: list = [1, "Hello", 5.0]
+print(lst)

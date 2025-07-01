@@ -1,0 +1,3 @@
+var y = "Hello"
+y = 10
+print(y)

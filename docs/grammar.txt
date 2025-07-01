@@ -1,0 +1,119 @@
+(* Handy Language Formal Grammar *)
+
+(* Tokens *)
+IDENTIFIER = letter , { letter | digit | "_" } ;
+NUMBER = digit , { digit } , [ "." , { digit } ] ;
+STRING = '"' , { character } , '"' ;
+BOOL = "True" | "False" ;
+NULL = "null" ;
+
+(* Comments and whitespace ignored between tokens *)
+
+(* Program structure *)
+program = { statement } ;
+
+(* Statements *)
+statement =
+      var_decl ";"
+    | const_decl ";"
+    | function_def
+    | lambda_assign ";"
+    | macro_def
+    | comptime_def
+    | type_def
+    | if_stmt
+    | for_stmt
+    | match_stmt
+    | try_stmt
+    | raise_stmt ";"
+    | expr ";"
+    | test_block
+    ;
+
+(* Variable Declaration *)
+var_decl = "var" , IDENTIFIER , [ ":" , type ] , [ "=" , expr ] ;
+
+(* Constant Declaration *)
+const_decl = "const" , IDENTIFIER , [ ":" , type ] , "=" , expr ;
+
+(* Function Definition *)
+function_def = "def" , IDENTIFIER , "(" , [ param_list ] , ")" ,
+                [ "->" , type ] , block ;
+
+param_list = param , { "," , param } ;
+param = IDENTIFIER , [ ":" , type ] , [ "=" , expr ] ;
+
+(* Lambda or code block assignment *)
+lambda_assign = "var" , IDENTIFIER , "=" , code_block ;
+
+(* Macro Definition *)
+macro_def = "macro" , IDENTIFIER , "(" , [ param_list ] , ")" , block ;
+
+(* Comptime Definition *)
+comptime_def = "comptime" , IDENTIFIER , "(" , [ param_list ] , ")" , block ;
+
+(* Type Definition *)
+type_def = "type" , IDENTIFIER , [ "extends" , IDENTIFIER ] , block ;
+
+(* Block *)
+block = "{" , { statement } , "}" ;
+
+(* Expressions *)
+expr =
+      value
+    | IDENTIFIER
+    | IDENTIFIER , "(" , [ arg_list ] , ")"
+    | expr , operator , expr
+    | cast_expr
+    ;
+
+arg_list = expr , { "," , expr } ;
+
+(* Operators *)
+operator = "+" | "-" | "*" | "/" | "//" | "%" | "==" | "!=" | ">" | "<" | ">=" | "<=" ;
+
+(* Cast Expression *)
+cast_expr = type , "(" , expr , ")" ;
+
+(* Values *)
+value = NUMBER | STRING | BOOL | NULL | list_literal | dict_literal | code_block ;
+
+(* Type Specification *)
+type = "int" | "float" | "number" | "string" | "bool"
+     | "list" , [ "[" , type , "]" ]
+     | "dict" , [ "[" , type , "," , type , "]" ]
+     | IDENTIFIER ;  (* for user-defined types *)
+
+(* List Literal *)
+list_literal = "[" , [ expr_list ] , [ "," ] , "]" ;
+expr_list = expr , { "," , expr } ;
+
+(* Dict Literal *)
+dict_literal = "{" , [ dict_entries ] , [ "," ] , "}" ;
+dict_entries = dict_entry , { "," , dict_entry } ;
+dict_entry = expr , ":" , expr ;
+
+(* Code Block *)
+code_block = "{" , { statement } , "}" ;
+
+(* If Statement *)
+if_stmt = "if" , expr , block , [ "else" , block ] ;
+
+(* For Statement *)
+for_stmt = "for" , IDENTIFIER , "in" , expr , block ;
+
+(* Match Statement *)
+match_stmt = "match" , expr , block , [ "else" , block ] ;
+
+(* Try-Except *)
+try_stmt = "try" , block , { except_clause } ;
+except_clause = "except" , ( IDENTIFIER | "[" , IDENTIFIER , { "," , IDENTIFIER } , "]" ) , block ;
+
+(* Raise *)
+raise_stmt = "raise" , IDENTIFIER , "(" , STRING , ")" ;
+
+(* Test Block *)
+test_block = "test" , STRING , block ;
+
+(* End of Grammar *)
+

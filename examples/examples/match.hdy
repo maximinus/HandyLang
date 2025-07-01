@@ -1,0 +1,8 @@
+var result = 2
+
+match result {
+    1: "One",
+    2: "Two"
+} else {
+    "Unknown"
+}

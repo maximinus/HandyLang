@@ -1,0 +1,2 @@
+var x: list[int] = []
+print(x)

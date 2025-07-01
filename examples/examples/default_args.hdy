@@ -1,0 +1,6 @@
+def say(msg="Hello") {
+    print(msg)
+}
+
+say()
+say("Hi")

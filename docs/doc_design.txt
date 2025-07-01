@@ -1,0 +1,497 @@
+Types and Variables
+===================
+
+# base types:
+# bool / int / float / number / string / list / dict
+
+Adding the type in a var is optional. A var can hold any value and can be re-assigned at any time.
+
+var x = 5
+var x: int = 5
+
+var x: float = 5.0
+var x: number = 5.0
+var x: string = "Hello"
+var x: bool = True    # or False
+
+# untyped lists can be anything
+var x: list = [1, "Hello", 5.0]
+var x: list[float] = [1.0, 4.6, 9.12]
+
+# if a value can be cast to the correct type with no loss, we allow that:
+var x: list[float] = [1, 2.0, 3.0]
+
+var x: dict = {"key": "item", "key2": "item2"}
+# dicts can be typed
+
+var x: dict[int, string] = {1: "Hello", 2: "World"}
+
+A trailing comma is allowed for both lists and dicts, but not required.
+To clarify, a trailing comma is not allowed in:
+
+* Function argument lists
+* Macro argument lists
+* Type field definitions
+
+
+# a var can be typed but not set:
+
+var x: int
+
+When defined this way, variables default to 0 (numeric), "" (string), or an empty list/dict as appropriate.
+
+
+
+A typed variable can only be assigned its own type, unless the variable is re-typed:
+
+# valid code
+var x: int = 5
+var x: float = 3.5
+
+# invalid code
+var x: int = 5
+x = 4.5     # cannot assign a float to an int
+
+An untyped variable can be assigned any type:
+
+var x = 5
+x = "Hello"
+x = 5.6
+
+
+It must be noted that ALL variables have a type; when we say "untyped" we really mean "not bound to a particular type". But if we say
+
+var foo = "Hello"
+
+Then foo is of type "string"; just that we can easily then do
+
+foo = 3
+
+And then foo is of type "integer"
+
+
+Not allowed:
+
+# 4 is not a float; it should be 4.0
+var x: float = 4
+
+# x set as int: cannot be cast to float
+var x: int = 4
+x = 3.5
+
+
+Implicit upcasting is allowed within lists where the declared type is broader (e.g. int to float in list[float]). However, for single variable assignments, implicit upcasting is disallowed to preserve type safety.
+
+# if a list is cast as a certain type, must use that type only
+var x: list[int] = [0, 2.5, 6]
+
+
+Number is a value which can be any number, including integers, reals, imaginary numbers, quaternions and so on.
+
+var x: number = 4
+var x: number = 4.2
+var x: number = 10/3
+
+A number can be defined by casting: x = number(10 / 3)
+
+All of these are valid, and the value 10/3 is exactly that, not a floating point definition of that, so x * 10 will exactly equal 10.
+
+Division / always returns number unless forced-cast.
+
+In general, it is best to cast values to get the result you want.
+
+
+You can use integer division or a cast:
+
+var x = 10 // 2         # integer division, the result is an integer
+var x = float(10 / 2)   # x is assigned a float, as it is castreturns a float, and thus the current type of x is a float
+
+Casting number to float will produce an approximate float value if the number cannot be represented exactly.
+
+
+Const
+=====
+
+A const cannot be changed
+
+const PI: float = 3.141
+
+
+PI = 5   # gives an error
+
+const PI: float = 3.141    # error: PI is already defined
+
+The type of a const is optional, if the type can be inferred. If the type could be any one of several types, the simplest is chosen, Int -> Float -> Number
+
+So
+
+const MY_VAL = 5
+
+would make MY_VAL an int.
+
+In the case of code like this:
+
+const x = 10/3
+
+x would be a float, since the value 10/3 can be stored in a float. In general, it is better to type constants:
+
+const x: number = 10 / 3
+
+
+
+Functions
+=========
+
+Functions are defined as in Python:
+
+def my_func(arg1, arg2: type) {
+    some_code()
+}
+
+You can nominate a return type as well, although this is optional:
+
+def my_code(arg1: int) -> int {
+    return arg1 + 5
+}
+
+Type annotations are optional per argument. Default values are allowed, so the following is allowed:
+
+def func1(arg1: int, arg2) {}
+def func2(arg1, arg2: string, arg3="Hello") {}
+
+Note that automatic typing of untyped default values follows the same rules as inferred typing for consts.
+
+In the case of, for example
+
+def foo(arg="Hello") {}
+
+The value "arg" could be redefined inside the function:
+
+def foo(arg="Hello") {
+    arg = 5
+    arg = number(4/ 7)
+}
+
+This is true if arg was any other value.
+But this would not be allowed:
+
+def foo(arg: string="Hello") {
+    # error, arg is typed to always be a string    
+    arg = 5
+}
+
+There are no restrictions on reassigning different types to the same argument variable within a function if the var is not assigned a type.
+
+
+Lambdas and Code
+================
+
+You can define a block of code and assign to a variable:
+
+var foo = { print("Hello") }
+
+When defined this way, the code is not executed immediately. To do this, you must call it:
+
+foo()
+
+You can pass in state as well in the call:
+
+var foo = { print(name) }
+
+foo(name="Chris")
+
+
+Or you can use a simple function definition to force the state:
+
+var foo = f(name: string) { print(name) }
+
+# error, no name defined:
+foo()
+
+
+When a block of code is executed, it runs in the current environment. For example:
+
+var foo = "Hello"
+var bar = { print(foo) }
+bar()  # prints "Hello"
+
+If the block references an undefined variable at execution, an error is raised:
+
+var bar = { print(other_var) }
+bar()  # error: other_var not defined
+
+When calling a code block, named arguments can be provided, which are temporarily added to its execution environment:
+
+var bar = { print(name) }
+bar(name="Chris")  # prints "Chris"
+
+When a code block is defined with declared parameters using f(...) { ... }, arguments must be provided at call time. Positional arguments are matched in order to parameter definitions:
+
+var foo = f(name: string) { print(name) }
+
+foo("Chris")        # same as foo(name="Chris")
+foo(name="Chris")   # valid
+foo()               # error: missing required argument 'name'
+
+
+Macros
+======
+
+Macros are functions that return code blocks:
+
+macro unless(cond, body) {
+    return { if (not `cond) `body };
+}
+
+
+Rule 1: Backticks are only allowed inside macros.
+Rule 2: `value inserts the literal code or value as written in the macro call.
+Rule 3: `value() evaluates the value in the current environment at macro expansion time and inserts the resulting literal into the code.
+Note that this requires full evaluation; if the evaluation fails, the macro also fails. For normal macros, the failure will be in compile time; for an @macro expression, the failure will be in runtime.
+Rule 4: `value(foo=3) evaluates value in a temporary environment where foo is bound to 3 during expansion, then inserts the result as a literal.
+
+A macro can also be called at runtime, if called in the format @macro-name, it will, as in compile time, return a code block.
+Evaluation of `value() occurs at runtime in this case.
+
+So the code @unless(a, b) means "do not evaluate this macro at compile time; instead, run the macro at run-time and return the value"
+
+This means that you would need to run the result yourself:
+
+var x = @macro-name(a, b)
+x()
+
+
+Comptime
+========
+
+Comptime functions are run when compiling, or before the interpretation block.
+They return code that replaces the comptime block
+
+comptime my_code() {
+    var foo = []
+    for i in [1, 2, 3, 4, 5] {
+        foo.append(i * i)
+    }
+    return { var foo: list = `foo }
+}
+
+The return value must be valid Handy code.
+Types in comptime do not need to be known at compile time; dynamic reflection exists.
+
+
+
+Types
+=====
+
+
+New types can be defined:
+
+type Person {
+    var name: string
+    var age: int
+    
+    def print_name() {
+        print(this.name)
+    }
+}
+
+
+Inside a class, "this" is a reference to the class
+
+There is an auto-constructor:
+
+var foo = Person(name="Chris", age=13)
+
+
+Types can be extended:
+
+type Student extends Person {
+    classroom: string
+}
+
+var foo = Student(name="Chris", age=13, classroom="7B")
+
+
+You can only extend a class by one other class, i.e. this is wrong:
+
+type Student extends Person, Class {
+...
+}
+
+
+True and False
+==============
+
+The value False and the value null are "False".
+All other values are "True".
+
+
+Control Flow
+============
+
+if x > 5 {
+    print("Big")
+} else {
+    print("Small")
+}
+
+for item in [1, 2, 3] {
+    print(item)
+}
+
+match result {
+    "ok":
+        { print("Got: " + x) }
+    "fail":
+        { print("Oops: " + msg) }
+}
+
+In this case, match actually accepts 2 arguments. The first is some value or variable; the second is a dictionary.
+
+If the matched value is a code block, it is executed immediately and any returned value is used. If it is not a code block, the value itself is returned directly.
+
+The match statement also accepts an "else" statement in this style:
+
+result = random()
+match result {
+    1: { print("A one!") }
+    2: { print("A two!") }
+} else {
+    print("Something else")
+}
+
+or you can return straight values:
+
+match result {
+    1: "A one",
+    2: "A two"
+} else {
+    print("Something else")
+}
+
+
+Or something more funky:
+
+match result {
+    1: "One",
+    2: { print("Two"); return "Returned Two" }
+} else {
+    print("Unknown")
+}
+
+"Match" is syntactic sugar for match(x, { ... })
+"If" is syntactic sugar for if({..code..}, {..a..}, {..b..}), where the code ..a.. is run if code evaluates to true, and b is run otherwise. b is optional.
+
+
+Exceptions
+==========
+
+raise ValueError("some message")
+
+try {
+    some_code
+}
+except ValueError {
+    print("Something bad happened!")
+    # inside the block, this refers to the actual exception
+    print(this.message)
+}
+
+You can check against more than one exception in 2 ways:
+
+try {
+    some_code
+}
+except ValueError {
+}
+except SystemError {
+}
+
+or
+
+try {
+    some_code
+}
+except [ValueError, SystemError] {
+    # this block is executed if any exception in the list is raised
+    # the value "this" is bound to the exception, so you could do something like
+    print(this.error)
+}
+
+List syntax here is reserved for multiple exception types in except (i.e., it must be a list of exception types).
+To be precise, except [A, B] is not a general list expression; it must parse as a sequence of exception types.
+
+
+Inline Testing
+==============
+
+Tests are usually ignored unless the we are testing; they look like this:
+
+test "Numbers add correctly" {
+    assertEqual(1 + 1, 2)
+}
+
+The asserts are
+
+assertEqual
+assertNotEqual
+assertTrue
+assertFalse
+assertRaises
+
+
+Built-In Functions
+==================
+
+print(arg1, ....)
+    Print its arguments in sequence, with a newline after outputting every argument, so print("Hello", "World") gives
+
+Hello
+World
+
+
+Semi-Colons
+===========
+
+A semi-colon ends the statement, so another can be placed after - otherwise you need a newline
+
+print("Hello"); print("World")
+
+is the same as
+
+print("Hello")
+print("World")
+
+
+Null values
+===========
+
+Internally, a variable is a pointer to memory. A variable is typed, so we can know what the data represents.
+There is a value null, which a variable of any type can point to. It represents "nothing", like None in Python.
+
+null is assignable to any variable regardless of type.
+
+
+Return Values
+=============
+
+The return value of a code block can be set in three ways:
+
+Explicit, with the use of "return ..."
+Implicit, in that if no return is reached, null is returned.
+This is true for all blocks, including if, match, for, and functions.
+
+Blocks
+======
+
+Block openers: Always use { } for blocks; avoid colon {} inconsistencies.
+
+Newlines
+========
+
+In general, formatting is not forced, so
+
+for item in [1, 2, 3] {print(item)}
+
+Is valid code
+
