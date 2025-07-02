@@ -1,0 +1,8 @@
+def test() {
+    print("Hello, World!")
+    var x = 10
+    print(x
+
+    # This line will never be reached
+    var y = 20
+}
